@@ -11,8 +11,6 @@ const INGREDIENT_PRICES = {
     bacon:0.7
 }
 
-
-
 class BurgerBuilder extends React.Component {
     state ={
         ingredients: {
@@ -22,8 +20,21 @@ class BurgerBuilder extends React.Component {
             meat: 0
         },
 
-        totalPrice: 4
+        totalPrice: 4,
+        purchasable: false
     }
+
+    updatePurchaseState(ingredients){
+
+        const sum = Object.keys(ingredients)
+        .map(igKey =>{
+            return ingredients[igKey] //to access values of the type of ingredients: [0,1,0...]
+        })
+        .reduce((sum, el)=>{
+            return sum + el; // to do the sum on the ingredients
+        }, 0)
+    this.setState({purchasable: sum > 0 }) //sets to true or false
+    };
 
     addIngredientHandler = (type) => {
         const oldCount = this.state.ingredients[type];
@@ -38,6 +49,7 @@ class BurgerBuilder extends React.Component {
         const newPrice = oldPrice + priceAddition;
 
         this.setState({totalPrice: newPrice, ingredients: updtedIngredients})
+        this.updatePurchaseState(updtedIngredients)
         
     }
 
@@ -51,13 +63,12 @@ class BurgerBuilder extends React.Component {
         const updtedIngredients = {
             ...this.state.ingredients
         };
-
         updtedIngredients[type] = updatedCount;
         const priceDeduction = INGREDIENT_PRICES[type];
         const oldPrice = this.state.totalPrice;
-        const newPrice = oldPrice + priceDeduction;
-
+        const newPrice = oldPrice - priceDeduction;
         this.setState({totalPrice: newPrice, ingredients: updtedIngredients})
+        this.updatePurchaseState(updtedIngredients)
     }
 
     render(){
@@ -75,7 +86,9 @@ class BurgerBuilder extends React.Component {
                 <BuildControls 
                 ingredientAdded = {this.addIngredientHandler}
                 ingredientRemove ={this.removeIngredientHandler}
-                disabled={disabledInfo}/>
+                disabled={disabledInfo}
+                purchasable={this.state.purchasable}
+                price={this.state.totalPrice}/>
             </Aux>
         );
     }
